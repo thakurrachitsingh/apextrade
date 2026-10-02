@@ -1,0 +1,26 @@
+package com.rachit.apextrade.account.controller;
+
+import com.rachit.apextrade.account.dto.AccountBalanceResponse;
+import com.rachit.apextrade.account.service.AccountLedger;
+import com.rachit.apextrade.auth.security.UserPrincipal;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/users")
+public class AccountController {
+
+    private final AccountLedger ledger;
+
+    public AccountController(AccountLedger ledger) {
+        this.ledger = ledger;
+    }
+
+    @GetMapping("/balance")
+    public ResponseEntity<AccountBalanceResponse> getBalance(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(ledger.getBalance(principal.userId()));
+    }
+}
