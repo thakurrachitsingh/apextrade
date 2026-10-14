@@ -1,0 +1,55 @@
+package com.rachit.apextrade.order.controller;
+
+import com.rachit.apextrade.auth.security.UserPrincipal;
+import com.rachit.apextrade.order.dto.ActiveOrderResponse;
+import com.rachit.apextrade.order.exception.InvalidOrderException;
+import com.rachit.apextrade.order.dto.OrderRequest;
+import com.rachit.apextrade.order.dto.OrderResponse;
+import com.rachit.apextrade.order.service.OrderService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
+
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("/api/v1/orders")
+public class OrderController {
+
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    @PostMapping
+    public ResponseEntity<OrderResponse> placeOrder(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody OrderRequest request
+    ) {
+        OrderResponse response = orderService.placeOrder(principal.userId(), request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("orderId") long orderId
+    ) {
+        if (orderId <= 0) {
+            throw new InvalidOrderException("Invalid orderId: " + orderId);
+        }
+
+        OrderResponse response = orderService.cancelOrder(principal.userId(), orderId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ActiveOrderResponse>> getActiveOrders(@AuthenticationPrincipal UserPrincipal principal) {
+        List<ActiveOrderResponse> activeOrders = orderService.getActiveOrders(principal.userId());
+        return ResponseEntity.ok(activeOrders);
+    }
+}
+
